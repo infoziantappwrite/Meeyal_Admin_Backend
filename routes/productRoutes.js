@@ -13,8 +13,8 @@ const upload = require('../middleware/upload');
 // Routes
 router.get('/', getAllProducts);
 router.get('/:id', getProductById);
-router.put('/:id', updateProduct);
+router.put('/:id',upload.array('productImages', 10), updateProduct);
 router.delete('/:id', deleteProduct);
-router.post('/', upload.array('productImages', 5), createProduct); // ✅ Correct way
+router.post('/', upload.array('productImages', 10), createProduct); // ✅ Correct way
 
 module.exports = router;

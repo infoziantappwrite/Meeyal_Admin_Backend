@@ -1,10 +1,10 @@
 // utils/s3.js
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const crypto = require('crypto');
 const path = require('path');
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION, // e.g., 'ap-south-1'
+  region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
@@ -30,4 +30,5 @@ async function uploadToS3(file) {
   return `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
 }
 
-module.exports = uploadToS3;
+
+module.exports = { uploadToS3 };

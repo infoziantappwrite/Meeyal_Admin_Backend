@@ -2,6 +2,7 @@
 const Product = require('../models/Product');
 const ProductImage = require('../models/ProductImage');
 const uploadToS3 = require('../utils/s3')
+const deleteFromS3 = require('../utils/deletes3');
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -31,8 +32,6 @@ exports.getProductById = async (req, res) => {
   }
 };
 exports.createProduct = async (req, res) => {
-  console.log('Creating product with files:', req.body, req.files);
-  
   try {
     const {
       productName,
@@ -88,33 +87,80 @@ exports.createProduct = async (req, res) => {
 
 
 exports.updateProduct = async (req, res) => {
+  // console.log("Update product request body:", req.body);
+  
   try {
     const productId = req.params.id;
-    const update = req.body;
+    const update = { ...req.body };
 
-    // Optional: handle updating images if needed (requires more logic)
+
+
+
+
+
+
+    // Handle new image uploads if any
+    if (req.files && req.files.length > 0) {
+      const imageUrls = await Promise.all(
+        req.files.map(async (file) => await uploadToS3(file))
+      );
+
+      const imageDocs = await Promise.all(
+        imageUrls.map((url) => ProductImage.create({ imageUrl: url }))
+      );
+
+      console.log("New image documents:", imageDocs);
+      
+
+       const newImageIds = imageDocs.map((img) => img._id);
+
+  // Fetch current product's images
+  const currentProduct = await Product.findById(productId);
+
+  if (!currentProduct) {
+    return res.status(404).json({ message: "Product not found" });
+  }
+
+  // Combine old and new image IDs
+  update.productImages = [...currentProduct.productImages, ...newImageIds];
+}
+
+
     const updatedProduct = await Product.findByIdAndUpdate(productId, update, {
-      new: true
-    }).populate('category subCategory productImages');
+      new: true,
+    }).populate("category subCategory productImages");
 
-    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     res.status(200).json(updatedProduct);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating product', error });
+    res.status(500).json({ message: "Error updating product", error });
   }
 };
 
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findByIdAndDelete(req.params.id).populate('productImages');
 
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    // Optionally delete related product images
-    await ProductImage.deleteMany({ _id: { $in: product.productImages } });
+    // Delete each image from S3
+    if (product.productImages.length > 0) {
+      await Promise.all(
+        product.productImages.map(async (img) => {
+          console.log("Deleting image from S3:", img.imageUrl);
+          
+          await deleteFromS3(img.imageUrl); // Deletes from S3
+        })
+      );
+    }
 
-    res.status(200).json({ message: 'Product deleted successfully' });
+    // Delete from DB
+    await ProductImage.deleteMany({ _id: { $in: product.productImages.map(img => img._id) } });
+
+    res.status(200).json({ message: 'Product and images deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting product', error });
   }
