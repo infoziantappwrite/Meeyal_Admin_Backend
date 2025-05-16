@@ -30,8 +30,9 @@ exports.getProductById = async (req, res) => {
     res.status(500).json({ message: 'Error fetching product', error });
   }
 };
-
 exports.createProduct = async (req, res) => {
+  console.log('Creating product with files:', req.body, req.files);
+  
   try {
     const {
       productName,
@@ -42,20 +43,29 @@ exports.createProduct = async (req, res) => {
       category,
       subCategory,
       status,
-      sold
+      sold,
     } = req.body;
 
-    // Upload all images to S3
+    // Basic validation
+    if (!productName || !details || !stock || !originalPrice || !category) {
+      return res.status(400).json({ message: 'Missing required product fields' });
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: 'No product images uploaded' });
+    }
+
+    // Upload to S3
     const imageUrls = await Promise.all(
       req.files.map(async (file) => await uploadToS3(file))
     );
 
-
-    // Save ProductImage docs
-      const productImageDocs = await Promise.all(
+    // Create image documents
+    const productImageDocs = await Promise.all(
       imageUrls.map((url) => ProductImage.create({ imageUrl: url }))
     );
 
+    // Create main product
     const product = await Product.create({
       productName,
       details,
@@ -64,17 +74,18 @@ exports.createProduct = async (req, res) => {
       originalPrice,
       category,
       subCategory,
-      status,
-      sold,
-      productImages: productImageDocs.map(img => img._id),
+      status: status || 'available',
+      sold: sold || 0,
+      productImages: productImageDocs.map((img) => img._id),
     });
 
     res.status(201).json(product);
   } catch (error) {
-  console.error("Product creation error:", error);
-  res.status(500).json({ message: 'Error creating product', error: error.message });
-}
+    console.error('Product creation error:', error);
+    res.status(500).json({ message: 'Error creating product', error: error.message });
+  }
 };
+
 
 exports.updateProduct = async (req, res) => {
   try {
