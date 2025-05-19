@@ -87,15 +87,11 @@ exports.createProduct = async (req, res) => {
 
 
 exports.updateProduct = async (req, res) => {
-  // console.log("Update product request body:", req.body);
+  console.log("Update product request body:", req.body);
   
   try {
     const productId = req.params.id;
     const update = { ...req.body };
-
-
-
-
 
 
 

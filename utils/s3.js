@@ -31,4 +31,4 @@ async function uploadToS3(file) {
 }
 
 
-module.exports = { uploadToS3 };
+module.exports = uploadToS3;
