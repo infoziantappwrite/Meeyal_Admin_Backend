@@ -6,6 +6,8 @@ const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const subCategoryRoutes = require('./routes/subCategoryRoutes');
 const authRoutes = require('./routes/auth');
+const deleteSingleImageRoutes = require('./routes/deleteSingleImages');
+const offerRoutes = require('./routes/offerRoutes');
 
 
 const app = express();
@@ -26,6 +28,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/subcategories', subCategoryRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/deletesingleimage', deleteSingleImageRoutes)
+app.use('/api/offer', offerRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);
