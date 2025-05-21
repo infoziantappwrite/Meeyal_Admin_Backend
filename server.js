@@ -14,7 +14,7 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://meeyal-admin-frontend.vercel.app", "https://meeyal-frontend-react.vercel.app/"],
+  origin: ["http://localhost:5173", "https://meeyal-admin-frontend.vercel.app", "https://meeyal-frontend-react.vercel.app"],
   credentials: true,
 }));
 
