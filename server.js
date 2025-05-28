@@ -40,13 +40,18 @@ const cron = require('node-cron');
 const Coupon = require('./models/Coupon');
 
 // Run every hour (adjust as needed)
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule('0 * * * *', async () => {  // Runs at the top of every hour
   try {
     const now = new Date();
     const expired = await Coupon.deleteMany({ expiryDate: { $lt: now } });
-    console.log(`Deleted ${expired.deletedCount} expired coupons`);
+
+    if (expired.deletedCount > 0) {
+      console.log(`🗑️ Deleted ${expired.deletedCount} expired coupons`);
+    } else {
+      console.log('✅ No expired coupons to delete at this time');
+    }
   } catch (error) {
-    console.error('Error deleting expired coupons:', error);
+    console.error('❌ Error deleting expired coupons:', error.message);
   }
 });
 
