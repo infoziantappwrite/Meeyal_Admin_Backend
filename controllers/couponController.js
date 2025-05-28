@@ -48,3 +48,32 @@ exports.deleteCoupon = async (req, res) => {
     res.status(500).json({ message: 'Error deleting coupon', error: error.message });
   }
 };
+
+exports.checkCoupon = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ message: 'Coupon code is required' });
+    }
+
+    const coupon = await Coupon.findOne({ code });
+
+    if (!coupon) {
+      return res.status(404).json({ message: 'Coupon not found' });
+    }
+
+    const now = new Date();
+
+    if (new Date(coupon.expiryDate) < now) {
+      return res.status(400).json({ message: 'Coupon has expired' });
+    }
+
+    res.status(200).json({
+      message: 'Coupon is valid',
+      discountPercentage: coupon.discountPercentage,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error checking coupon', error: error.message });
+  }
+};
