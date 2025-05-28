@@ -151,3 +151,33 @@ exports.deleteProduct = async (req, res) => {
     res.status(500).json({ message: 'Error deleting product', error: error.message });
   }
 };
+
+
+// controllers/productController.js
+exports.getRelatedProducts = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    // Fetch the current product to get its subcategory
+    const currentProduct = await Product.findById(productId);
+
+    if (!currentProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const subCategoryId = currentProduct.subCategory;
+
+    // Find other products in the same subcategory, excluding the current product
+    const relatedProducts = await Product.find({
+      subCategory: subCategoryId,
+      _id: { $ne: productId } // exclude the current product itself
+    })
+      .populate('category')
+      .populate('subCategory')
+      .populate('productImages');
+
+    res.status(200).json(relatedProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching related products", error: error.message });
+  }
+};

@@ -7,6 +7,7 @@ const {
   updateProduct,
   deleteProduct,
   createProduct,
+  getRelatedProducts
 } = require('../controllers/productController');
 const upload = require('../middleware/upload');
 
@@ -16,5 +17,7 @@ router.get('/:id', getProductById);
 router.put('/:id',upload.array('productImages', 10), updateProduct);
 router.delete('/:id', deleteProduct);
 router.post('/', upload.array('productImages', 10), createProduct); // ✅ Correct way
+router.get('/:id/related', getRelatedProducts);
+
 
 module.exports = router;
