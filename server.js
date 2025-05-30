@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const deleteSingleImageRoutes = require('./routes/deleteSingleImages');
 const offerRoutes = require('./routes/offerRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const orderRoutes = require('./routes/Order'); // Assuming you have an Order route set up
 
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/deletesingleimage', deleteSingleImageRoutes)
 app.use('/api/offer', offerRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/orders', orderRoutes); // Assuming you have an Order route set up
 
 
 
