@@ -1,5 +1,6 @@
 const Order = require('../models/orderSchema');
 const UserProfile = require('../models/UserProfileClient'); // make sure this path is correct
+const Product = require('../models/Product'); // make sure this path is correct
 
 // Update order status if paymentStatus is 'pending'
 exports.updateOrderStatus = async (req, res) => {
@@ -40,13 +41,36 @@ exports.getPendingOrders = async (req, res) => {
     const pendingOrders = await Order.find({ paymentStatus: 'pending' })
       .populate({
         path: 'userId',
-        model: UserProfile, // make sure this matches your user model name
-        select: 'username name', // pull BOTH username + name
+        model: UserProfile,
+        select: 'username name',
+      })
+      .populate({
+        path: 'items.productId', // populate productId in each item
+        model: Product,
+        populate: {
+          path: 'productImages', // populate images inside each product
+          model: 'ProductImage'
+        }
       });
 
     res.json({ orders: pendingOrders });
   } catch (err) {
     console.error('Error fetching pending orders:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findByIdAndDelete(orderId);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    res.json({ message: 'Order deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting order:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
