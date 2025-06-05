@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const SubCategory = require('../models/SubCategory');
 
 exports.createCategory = async (req, res) => {
   try {
@@ -31,10 +32,15 @@ exports.getCategoryById = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
   try {
+    // Step 1: Delete all subcategories that belong to this category
+    await SubCategory.deleteMany({ category: req.params.id });
+
+    // Step 2: Delete the category itself
     const deleted = await Category.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: 'Category not found' });
-    res.status(200).json({ message: 'Category deleted successfully' });
+
+    res.status(200).json({ message: 'Category and its subcategories deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting category', error: error.message });
+    res.status(500).json({ message: 'Error deleting category and subcategories', error: error.message });
   }
 };
