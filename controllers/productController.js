@@ -43,6 +43,7 @@ exports.createProduct = async (req, res) => {
       subCategory,
       status,
       sold,
+      material
     } = req.body;
 
     // Basic validation
@@ -76,6 +77,7 @@ exports.createProduct = async (req, res) => {
       status: status || 'available',
       sold: sold || 0,
       productImages: productImageDocs.map((img) => img._id),
+      material
     });
 
     res.status(201).json(product);
