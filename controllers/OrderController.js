@@ -1,6 +1,7 @@
 const Order = require('../models/orderSchema');
 const UserProfile = require('../models/UserProfileClient'); // make sure this path is correct
 const Product = require('../models/Product'); // make sure this path is correct
+const Address = require('../models/Address'); // make sure this path is correct
 
 // Update order status if paymentStatus is 'pending'
 exports.updateOrderStatus = async (req, res) => {
@@ -45,12 +46,17 @@ exports.getPendingOrders = async (req, res) => {
         select: 'username name',
       })
       .populate({
-        path: 'items.productId', // populate productId in each item
+        path: 'items.productId',
         model: Product,
         populate: {
-          path: 'productImages', // populate images inside each product
+          path: 'productImages',
           model: 'ProductImage'
         }
+      })
+      .populate({
+        path: 'addressId',
+        model: Address, // ✅ Ensure Address model is correct
+        select: 'name address city country postalCode phone'
       });
 
     res.json({ orders: pendingOrders });
@@ -59,7 +65,6 @@ exports.getPendingOrders = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 exports.deleteOrder = async (req, res) => {
   try {
